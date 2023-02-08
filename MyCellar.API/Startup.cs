@@ -6,6 +6,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
+using MyCellar.Business.Repository;
+using MyCellar.Business.Repository.Impl;
+using MyCellar.Common.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +30,27 @@ namespace MyCellar.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+            services.AddAutoMapper(typeof(Startup));
+
+            services.AddTransient<IRepository<Product>, ProductRepository>();
+            services.AddTransient<IRepository<Category>, CategoryRepository>();
+            services.AddTransient<IRepository<Recipe>, RecipeRepository>();
+
+            // Autorise la communication entre application (Back/Front)
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.AllowAnyHeader()
+                   .AllowAnyMethod()
+                   .SetIsOriginAllowed((host) => true)
+                   .AllowCredentials();
+            }));
+
+            // Documentation API
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "myCellar", Version = "v1" });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -34,11 +59,16 @@ namespace MyCellar.API
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "myCellar"));
             }
 
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors("MyPolicy");
+
 
             app.UseAuthorization();
 
