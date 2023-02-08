@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using MyCellar.API.Utils;
+using Microsoft.AspNetCore.Authorization;
 using MyCellar.Business.Repository;
 using MyCellar.Business.Wrappers;
 using MyCellar.Common.Models;
@@ -27,6 +28,7 @@ namespace MyCellar.API.Controllers
             _mapper = mapper;
         }
 
+        [Authorize(Roles = "User, Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -45,6 +47,7 @@ namespace MyCellar.API.Controllers
             }
         }
 
+        [Authorize(Roles = "User, Admin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
@@ -76,6 +79,7 @@ namespace MyCellar.API.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Recipe recipe)
         {
@@ -106,6 +110,7 @@ namespace MyCellar.API.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] Recipe recipe)
         {
@@ -148,6 +153,7 @@ namespace MyCellar.API.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPatch("{id}")]
         public async Task<IActionResult> Patch(int id, [FromBody] JsonPatchDocument<Recipe> patchRecipe)
         {
@@ -190,6 +196,7 @@ namespace MyCellar.API.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -222,6 +229,7 @@ namespace MyCellar.API.Controllers
             }
         }
 
+        [Authorize(Roles = "User, Admin")]
         [HttpGet("count")]
         public async Task<IActionResult> Count()
         {
@@ -240,6 +248,7 @@ namespace MyCellar.API.Controllers
             }
         }
 
+        [Authorize(Roles = "User, Admin")]
         [HttpGet("paginate")]
         public async Task<IActionResult> GetPaginate([FromQuery] int? page, [FromQuery] int pagesize = 10, [FromQuery] string search = "")
         {

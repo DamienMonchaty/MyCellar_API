@@ -1,8 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MyCellar.Common.Models;
 using MyCellar.Common.Models.Enums;
-using System;
+using BC = BCrypt.Net.BCrypt;
 
 
 namespace MyCellar.Business.Context
@@ -13,11 +14,12 @@ namespace MyCellar.Business.Context
         public DbSet<Product> Products { get; set; }
         public DbSet<Recipe> Recipes { get; set; }
         public DbSet<RecipeProduct> RecipeProducts { get; set; }
+        public DbSet<User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             // optionsBuilder.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=HRMan;integrated security=True;");
-            var connectionString = "server=localhost;user=root;password=root;database=mydb";
+            var connectionString = "server=localhost;user=root;password=root;database=mycellardb";
             var serverVersion = new MySqlServerVersion(new Version(8, 0, 29));
             optionsBuilder.UseMySql(connectionString, serverVersion)
                         .LogTo(Console.WriteLine, LogLevel.Information)
@@ -35,6 +37,7 @@ namespace MyCellar.Business.Context
             modelBuilder.Entity<Product>().ToTable("products").HasKey(u => u.Id).HasName("PK_Products");
             modelBuilder.Entity<Recipe>().ToTable("recipes").HasKey(u => u.Id).HasName("PK_Recipes");
             modelBuilder.Entity<RecipeProduct>().ToTable("recipes_products").HasKey(c => new { c.RecipeId, c.ProductId }).HasName("PK_Recipes_Products");
+            modelBuilder.Entity<User>().ToTable("users").HasKey(u => u.Id).HasName("PK_Users");
 
             // Configuration des tables
             // Category
@@ -63,8 +66,16 @@ namespace MyCellar.Business.Context
             modelBuilder.Entity<Recipe>().Property(u => u.CreatedDate).HasColumnType("datetime").IsRequired();
             //modelBuilder.Entity<Recipe>().Property(u => u.UpdatedDate).HasColumnType("datetime").IsRequired();
 
+            // RecipeProduct
             modelBuilder.Entity<RecipeProduct>().Property(u => u.RecipeId).HasColumnType("int").IsRequired();
             modelBuilder.Entity<RecipeProduct>().Property(u => u.ProductId).HasColumnType("int").IsRequired();
+
+            // User
+            modelBuilder.Entity<User>().Property(u => u.Id).HasColumnType("int").ValueGeneratedOnAdd().IsRequired();
+            modelBuilder.Entity<User>().Property(u => u.UserName).HasColumnType("nvarchar(100)").IsRequired(false);
+            modelBuilder.Entity<User>().Property(u => u.Email).HasColumnType("nvarchar(100)").IsRequired();
+            modelBuilder.Entity<User>().Property(u => u.Password).HasColumnType("nvarchar(100)").IsRequired();
+            modelBuilder.Entity<User>().Property(u => u.Sexe).HasColumnType("nvarchar(100)").IsRequired(false);
 
             // Relation OneToMany
             // Une categorie peut avoir un ou plusieurs produits
@@ -221,6 +232,27 @@ namespace MyCellar.Business.Context
                      ProductId = 4
                  }
            );
+
+            modelBuilder.Entity<User>().HasData(
+                   new User
+                   {
+                       Id = 1,
+                       UserName = "prenom1",                   
+                       Email = "email1@email.fr",
+                       Password = BC.HashPassword("password"),
+                       Sexe = "sexe1",                  
+                       Role = "User",
+                   },
+                   new User
+                   {
+                       Id = 2,
+                       UserName = "prenom2",
+                       Email = "email2@email.fr",
+                       Password = BC.HashPassword("password"),
+                       Sexe = "sexe1",
+                       Role = "Admin",
+                   }
+               ); 
         }
     }
 }
