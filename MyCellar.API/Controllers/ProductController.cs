@@ -129,7 +129,11 @@ namespace MyCellar.API.Controllers
                 var pToUpdate = await _productRepository.GetById(id);
                 if (pToUpdate != null)
                 {
-                    pToUpdate = _mapper.Map(product, pToUpdate);
+                    //pToUpdate = _mapper.Map(product, pToUpdate);
+                    pToUpdate.Title = product.Title;
+                    pToUpdate.Description = product.Description;
+                    pToUpdate.ImgUrl = product.ImgUrl;
+                    pToUpdate.Quantity = product.Quantity;
                     return Ok(new CustomResponse<Product>
                     {
                         Message = Global.ResponseMessages.Success,

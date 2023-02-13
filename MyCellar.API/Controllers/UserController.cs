@@ -28,6 +28,87 @@ namespace MyCellar.API.Controllers
         }
 
         [Authorize(Roles = "User")]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> getCurrentUser(int id)
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var userId = int.Parse(identity.FindFirst("id").Value);
+
+            if (userId == id)
+            {
+                try
+                {
+                    if (!ModelState.IsValid)
+                    {
+                        return BadRequest(new CustomResponse<object>
+                        {
+                            Message = Global.ResponseMessages.BadRequest,
+                            StatusCode = StatusCodes.Status400BadRequest,
+                            Result = ModelState
+                        });
+                    }
+
+
+                    return Ok(new CustomResponse<User>
+                    {
+                        Message = Global.ResponseMessages.Success,
+                        StatusCode = StatusCodes.Status200OK,
+                        Result = await _userRepository.GetById(userId)
+                    });
+                }
+                catch (SqlException ex)
+                {
+                    return StatusCode(Error.LogError(ex));
+                }
+            }
+            return NotFound();
+        }
+
+        [Authorize(Roles = "User")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> updateCurrentUser(int id, [FromBody] User user)
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            var userId = int.Parse(identity.FindFirst("id").Value);
+
+            if (userId == id)
+            {
+                try
+                {
+                    if (!ModelState.IsValid)
+                    {
+                        return BadRequest(new CustomResponse<object>
+                        {
+                            Message = Global.ResponseMessages.BadRequest,
+                            StatusCode = StatusCodes.Status400BadRequest,
+                            Result = ModelState
+                        });
+                    }
+
+                    var userToUpdate = await _userRepository.GetById(userId);
+                    if (userToUpdate != null)
+                    {
+                        // userToUpdate = _mapper.Map(user, userToUpdate);
+                        userToUpdate.Email = user.Email;
+                        userToUpdate.UserName = user.UserName;
+
+                        return Ok(new CustomResponse<User>
+                        {
+                            Message = Global.ResponseMessages.Success,
+                            StatusCode = StatusCodes.Status200OK,
+                            Result = await _userRepository.Update(userToUpdate)
+                        });
+                    }                    
+                }
+                catch (SqlException ex)
+                {
+                    return StatusCode(Error.LogError(ex));
+                }
+            }
+            return NotFound();
+        }
+
+        [Authorize(Roles = "User")]
         [HttpGet("{id}/products")]
         public async Task<IActionResult> GetAllProductsFromCurrentUser(int id)
         {

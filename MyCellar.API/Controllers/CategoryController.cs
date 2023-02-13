@@ -129,7 +129,9 @@ namespace MyCellar.API.Controllers
                 var cToUpdate = await _categoryRepository.GetById(id);
                 if (cToUpdate != null)
                 {
-                    cToUpdate = _mapper.Map(category, cToUpdate);
+                    //cToUpdate = _mapper.Map<Category, Category>(category, cToUpdate);
+                    cToUpdate.Title = category.Title;
+                    cToUpdate.Description = category.Description;
                     return Ok(new CustomResponse<Category>
                     {
                         Message = Global.ResponseMessages.Success,

@@ -95,10 +95,10 @@ namespace MyCellar.Business.Repository.Impl
             return result;
         }
 
-        public Task<User> AssignOneProductToCurrentUser(int userId, int productId)
+        public async Task<User> AssignOneProductToCurrentUser(int userId, int productId)
         {
-            var user = _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
-            var product = _context.Products.FirstOrDefaultAsync(x => x.Id == productId);
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == productId);
             UserProduct userProduct;
             if (user != null && product != null) {
                 userProduct = new UserProduct
@@ -107,7 +107,7 @@ namespace MyCellar.Business.Repository.Impl
                     ProductId = productId
                 };
                 _context.UserProducts.Add(userProduct);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
 
             return user;

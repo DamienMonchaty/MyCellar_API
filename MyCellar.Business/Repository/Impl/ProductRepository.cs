@@ -65,9 +65,9 @@ namespace MyCellar.Business.Repository.Impl
 
         public async Task<Product> Update(Product o)
         {
-            var emp = _context.Products.Update(o);
+            _context.Entry(o).State = EntityState.Modified;
             await _context.SaveChangesAsync();
-            return emp.Entity;
+            return o;
         }
     }
 }

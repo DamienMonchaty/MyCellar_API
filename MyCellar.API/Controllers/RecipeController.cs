@@ -129,7 +129,13 @@ namespace MyCellar.API.Controllers
                 var rToUpdate = await _recipeRepository.GetById(id);
                 if (rToUpdate != null)
                 {
-                    rToUpdate = _mapper.Map(recipe, rToUpdate);
+                    // rToUpdate = _mapper.Map(recipe, rToUpdate);
+                    rToUpdate.Title = recipe.Title;
+                    rToUpdate.Description = recipe.Description;
+                    rToUpdate.Duration = recipe.Duration;
+                    rToUpdate.ImgUrl = recipe.ImgUrl;
+                    rToUpdate.Difficulty = recipe.Difficulty;
+                    rToUpdate.Caloric = recipe.Caloric;
                     return Ok(new CustomResponse<Recipe>
                     {
                         Message = Global.ResponseMessages.Success,
