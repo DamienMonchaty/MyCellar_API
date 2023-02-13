@@ -15,6 +15,8 @@ namespace MyCellar.Business.Context
         public DbSet<Recipe> Recipes { get; set; }
         public DbSet<RecipeProduct> RecipeProducts { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<UserProduct> UserProducts { get; set; }
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -38,6 +40,7 @@ namespace MyCellar.Business.Context
             modelBuilder.Entity<Recipe>().ToTable("recipes").HasKey(u => u.Id).HasName("PK_Recipes");
             modelBuilder.Entity<RecipeProduct>().ToTable("recipes_products").HasKey(c => new { c.RecipeId, c.ProductId }).HasName("PK_Recipes_Products");
             modelBuilder.Entity<User>().ToTable("users").HasKey(u => u.Id).HasName("PK_Users");
+            modelBuilder.Entity<UserProduct>().ToTable("users_products").HasKey(c => new { c.UserId, c.ProductId }).HasName("PK_Users_Products");
 
             // Configuration des tables
             // Category
@@ -77,6 +80,10 @@ namespace MyCellar.Business.Context
             modelBuilder.Entity<User>().Property(u => u.Password).HasColumnType("nvarchar(100)").IsRequired();
             modelBuilder.Entity<User>().Property(u => u.Sexe).HasColumnType("nvarchar(100)").IsRequired(false);
 
+            // UserProduct
+            modelBuilder.Entity<UserProduct>().Property(u => u.UserId).HasColumnType("int").IsRequired();
+            modelBuilder.Entity<UserProduct>().Property(u => u.ProductId).HasColumnType("int").IsRequired();
+
             // Relation OneToMany
             // Une categorie peut avoir un ou plusieurs produits
             modelBuilder.Entity<Product>().HasOne<Category>().WithMany(g => g.Products).HasPrincipalKey(u => u.Id)
@@ -87,6 +94,11 @@ namespace MyCellar.Business.Context
             // Un ingredient peut etre dans une ou plusieurs recettes
             modelBuilder.Entity<RecipeProduct>().HasOne(sc => sc.Recipe).WithMany(s => s.RecipeProducts).HasForeignKey(sc => sc.RecipeId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<RecipeProduct>().HasOne(sc => sc.Product).WithMany(s => s.RecipeProducts).HasForeignKey(sc => sc.ProductId).OnDelete(DeleteBehavior.Cascade);
+
+            // Un utilisateur peut avoir dans sa box un ou plusieurs produits
+            // Un ingredient peut etre checke dans une ou plusieurs utilisateurs
+            modelBuilder.Entity<UserProduct>().HasOne(sc => sc.User).WithMany(s => s.UserProducts).HasForeignKey(sc => sc.UserId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<UserProduct>().HasOne(sc => sc.Product).WithMany(s => s.UserProducts).HasForeignKey(sc => sc.ProductId).OnDelete(DeleteBehavior.Cascade);
 
             // Seeding Data
             modelBuilder.Entity<Category>().HasData(
@@ -242,6 +254,7 @@ namespace MyCellar.Business.Context
                        Password = BC.HashPassword("password"),
                        Sexe = "sexe1",                  
                        Role = "User",
+                       CreatedDate = new DateTime().Date
                    },
                    new User
                    {
@@ -251,6 +264,7 @@ namespace MyCellar.Business.Context
                        Password = BC.HashPassword("password"),
                        Sexe = "sexe1",
                        Role = "Admin",
+                       CreatedDate = new DateTime().Date
                    }
                ); 
         }

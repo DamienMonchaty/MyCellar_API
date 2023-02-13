@@ -5,6 +5,7 @@ using MyCellar.Common.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using BC = BCrypt.Net.BCrypt;
@@ -42,7 +43,7 @@ namespace MyCellar.Business.Repository.Impl
 
         public async Task<List<User>> GetAll()
         {
-            return await _context.Users.Include("Address").ToListAsync();
+            return await _context.Users.ToListAsync();
         }
 
         public async Task<User> GetById(int id)
@@ -92,6 +93,52 @@ namespace MyCellar.Business.Repository.Impl
                 Items = query.Skip((page - 1 ?? 00) * pagesize).Take(pagesize).ToList()
             };
             return result;
+        }
+
+        public Task<User> AssignOneProductToCurrentUser(int userId, int productId)
+        {
+            var user = _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            var product = _context.Products.FirstOrDefaultAsync(x => x.Id == productId);
+            UserProduct userProduct;
+            if (user != null && product != null) {
+                userProduct = new UserProduct
+                {
+                    UserId = userId,
+                    ProductId = productId
+                };
+                _context.UserProducts.Add(userProduct);
+                _context.SaveChanges();
+            }
+
+            return user;
+        }
+
+        public Task<User> DeleteOneProductFromCurrentUser(int userId, int productId)
+        {
+            var user = _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+
+            var products = _context.Users
+                .Where(p => p == user.Result)
+                .SelectMany(p => p.UserProducts)
+                .Select(p => p.Product).ToList();
+
+            var productToDelete = products.SingleOrDefault(p => p.Id == productId);
+            _context.Products.Remove(productToDelete);
+            _context.SaveChanges();
+
+            return user;
+        }
+
+        public async Task<List<Product>> GetAllProductsFromCurrentUser(int userId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+
+            var products = _context.Users
+                .Where(p => p == user)
+                .SelectMany(p => p.UserProducts)
+                .Select(p => p.Product).ToList();
+
+            return products;
         }
     }
 }

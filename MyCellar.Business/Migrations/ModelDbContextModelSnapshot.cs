@@ -306,6 +306,9 @@ namespace MyCellar.Business.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(100)");
@@ -323,6 +326,9 @@ namespace MyCellar.Business.Migrations
                     b.Property<string>("Token")
                         .HasColumnType("longtext");
 
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("UserName")
                         .HasColumnType("nvarchar(100)");
 
@@ -335,21 +341,47 @@ namespace MyCellar.Business.Migrations
                         new
                         {
                             Id = 1,
+                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "email1@email.fr",
-                            Password = "$2a$11$HRA8Cf.6uwboYxhP1i8Mee9NWFw7.ejvgvVsV6Zr9DCNsWANdKYb.",
+                            Password = "$2a$11$ukzIdRAq.KA.H5zlxuCPw.9OQhCIYnmfWUmk3lN3PqSUk6.ts7ZMS",
                             Role = "User",
                             Sexe = "sexe1",
+                            UpdatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UserName = "prenom1"
                         },
                         new
                         {
                             Id = 2,
+                            CreatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "email2@email.fr",
-                            Password = "$2a$11$A34xXogGMKgcdhWxkTjNM.QLlRCWOZuyX2eEX9wwT5kbRq7y3RVlu",
+                            Password = "$2a$11$KyOtcIV6FJV4a6avyP2lmOjtenEb.BxYqWowbfrqaZLVbbjQ3uwcW",
                             Role = "Admin",
                             Sexe = "sexe1",
+                            UpdatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UserName = "prenom2"
                         });
+                });
+
+            modelBuilder.Entity("MyCellar.Common.Models.UserProduct", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("UserId", "ProductId")
+                        .HasName("PK_Users_Products");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("users_products");
                 });
 
             modelBuilder.Entity("MyCellar.Common.Models.Product", b =>
@@ -381,6 +413,25 @@ namespace MyCellar.Business.Migrations
                     b.Navigation("Recipe");
                 });
 
+            modelBuilder.Entity("MyCellar.Common.Models.UserProduct", b =>
+                {
+                    b.HasOne("MyCellar.Common.Models.Product", "Product")
+                        .WithMany("UserProducts")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MyCellar.Common.Models.User", "User")
+                        .WithMany("UserProducts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MyCellar.Common.Models.Category", b =>
                 {
                     b.Navigation("Products");
@@ -389,11 +440,18 @@ namespace MyCellar.Business.Migrations
             modelBuilder.Entity("MyCellar.Common.Models.Product", b =>
                 {
                     b.Navigation("RecipeProducts");
+
+                    b.Navigation("UserProducts");
                 });
 
             modelBuilder.Entity("MyCellar.Common.Models.Recipe", b =>
                 {
                     b.Navigation("RecipeProducts");
+                });
+
+            modelBuilder.Entity("MyCellar.Common.Models.User", b =>
+                {
+                    b.Navigation("UserProducts");
                 });
 #pragma warning restore 612, 618
         }

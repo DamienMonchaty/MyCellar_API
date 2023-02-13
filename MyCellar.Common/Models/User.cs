@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
@@ -14,5 +15,9 @@ namespace MyCellar.Common.Models
         public string Sexe { get; set; }
         public string Role { get; set; }
         public string Token { get; set; }
+        public virtual ICollection<UserProduct> UserProducts { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime UpdatedDate { get; set; }
+
     }
 }
