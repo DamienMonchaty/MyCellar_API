@@ -32,9 +32,8 @@ namespace MyCellar.API.Controllers
         public async Task<IActionResult> getCurrentUser(int id)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var userId = int.Parse(identity.FindFirst("id").Value);
-
-            if (userId == id)
+            var userId = identity.FindFirst("id").Value;
+            if (userId != null)
             {
                 try
                 {
@@ -47,13 +46,11 @@ namespace MyCellar.API.Controllers
                             Result = ModelState
                         });
                     }
-
-
                     return Ok(new CustomResponse<User>
                     {
                         Message = Global.ResponseMessages.Success,
                         StatusCode = StatusCodes.Status200OK,
-                        Result = await _userRepository.GetById(userId)
+                        Result = await _userRepository.GetById(int.Parse(userId))
                     });
                 }
                 catch (SqlException ex)
@@ -66,12 +63,11 @@ namespace MyCellar.API.Controllers
 
         [Authorize(Roles = "User")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> updateCurrentUser(int id, [FromBody] User user)
+        public async Task<IActionResult> updateCurrentUser([FromBody] User user)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var userId = int.Parse(identity.FindFirst("id").Value);
-
-            if (userId == id)
+            var userId = identity.FindFirst("id").Value;
+            if (userId != null)
             {
                 try
                 {
@@ -84,8 +80,7 @@ namespace MyCellar.API.Controllers
                             Result = ModelState
                         });
                     }
-
-                    var userToUpdate = await _userRepository.GetById(userId);
+                    var userToUpdate = await _userRepository.GetById(int.Parse(userId));
                     if (userToUpdate != null)
                     {
                         // userToUpdate = _mapper.Map(user, userToUpdate);
@@ -185,7 +180,6 @@ namespace MyCellar.API.Controllers
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             var userId = identity.FindFirst("id").Value;
             if (userId != null) { 
-
                 try
                 {
                     if (!ModelState.IsValid)
@@ -197,8 +191,6 @@ namespace MyCellar.API.Controllers
                             Result = ModelState
                         });
                     }
-
-
                     return Ok(new CustomResponse<User>
                     {
                         Message = Global.ResponseMessages.Success,
