@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MyCellar.Business.Repository.Impl
 {
-    public class CategoryRepository : IRepository<Category>
+    public class CategoryRepository : ICategoryRepository
     {
         private readonly ModelDbContext _context;
 
@@ -58,16 +58,65 @@ namespace MyCellar.Business.Repository.Impl
             return result;
         }
 
-        public async Task<Category> GetById(int id)
-        {
-            return await _context.Categories.FirstOrDefaultAsync(x => x.Id == id);
-        }
-
         public async Task<Category> Update(Category o)
         {
             _context.Entry(o).State = EntityState.Modified;
             await _context.SaveChangesAsync();
             return o;
         }
+
+        public async Task<Category> GetById(int id)
+        {
+            return await _context.Categories.FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<List<Category>> GetProductsByCategoryId(int categoryId)
+        {
+            return await _context.Categories.Include("Products").Where(p => p.Id == categoryId).ToListAsync();
+        }
+
+        public async Task<Product> GetOneProductByCategoryId(int categoryId, int productId)
+        {
+            var category = await _context.Categories.Include("Products").SingleOrDefaultAsync(o => o.Id == categoryId);
+            var product = category.Products.FirstOrDefault(ol => ol.Id == productId);
+            return product;
+        }
+
+        public async Task<Category> SaveOneProductByCategoryId(int categoryId, Product product)
+        {
+            var category = await _context.Categories.Include("Products").SingleOrDefaultAsync(o => o.Id == categoryId);
+            category.Products.Add(product);
+            await _context.SaveChangesAsync();
+            return category;
+        }
+
+        public async Task<Category> EditOneProductByCategoryId(int categoryId, int productId, Product product)
+        {
+            var category = await _context.Categories.Include("Products").SingleOrDefaultAsync(o => o.Id == categoryId);
+            var productToUpdate = _context.Products.FirstOrDefault(ol => ol.Id == productId);
+            
+            productToUpdate.Title = product.Title;
+            productToUpdate.Description = product.Description;
+            productToUpdate.Quantity = product.Quantity;
+            productToUpdate.ImgUrl = product.ImgUrl;
+
+            _context.Entry(productToUpdate).State = EntityState.Modified;
+
+            await _context.SaveChangesAsync();
+            return category;
+        }
+
+        public async Task<Category> DeleteOneProductByCategoryId(int categoryId, int productId)
+        {
+            var category = await _context.Categories.Include("Products").SingleOrDefaultAsync(o => o.Id == categoryId);
+            var productToDelete = category.Products.FirstOrDefault(ol => ol.Id == productId);
+            if (productToDelete != null) {
+                category.Products.Remove(productToDelete);
+            }
+            // _context.Products.Remove(productToDelete);
+            await _context.SaveChangesAsync();
+            return category;
+        }
+
     }
 }

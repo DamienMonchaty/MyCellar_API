@@ -19,12 +19,14 @@ namespace MyCellar.API.Controllers
     [ApiController]
     public class CategoryController : ControllerBase
     {
-        private readonly IRepository<Category> _categoryRepository;
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly IRepository<Product> _productRepository;
         private readonly IMapper _mapper;
 
-        public CategoryController(IRepository<Category> categoryRepository, IMapper mapper)
+        public CategoryController(ICategoryRepository categoryRepository, IRepository<Product> productRepository, IMapper mapper)
         {
             _categoryRepository = categoryRepository;
+            _productRepository = productRepository;
             _mapper = mapper;
         }
 
@@ -262,6 +264,205 @@ namespace MyCellar.API.Controllers
                     StatusCode = StatusCodes.Status200OK,
                     Result = await _categoryRepository.GetAllPaginate(page, pagesize, search)
                 });
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(Error.LogError(ex));
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("{categoryId}/products")]
+        public async Task<ActionResult<IEnumerable<Category>>> GetProductsByCategoryId(int categoryId)
+        {
+            try
+            {
+                var category = await _categoryRepository.GetById(categoryId);
+                if (category != null)
+                {
+                    return Ok(new CustomResponse<List<Category>>
+                    {
+                        Message = Global.ResponseMessages.Success,
+                        StatusCode = StatusCodes.Status200OK,
+                        Result = await _categoryRepository.GetProductsByCategoryId(category.Id)
+                });
+                }
+                else
+                {
+                    return NotFound(new CustomResponse<Error>
+                    {
+                        Message = Global.ResponseMessages.NotFound,
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Result = new Error { ErrorMessage = Global.ResponseMessages.GenerateInvalid("Category with " + categoryId + " is not found") }
+                    });
+                }
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(Error.LogError(ex));
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("{categoryId}/products")]
+        public async Task<ActionResult<Category>> SaveProductByCategoryId(int categoryId, [FromBody] Product product)
+        {
+            try
+            {
+                var category = await _categoryRepository.GetById(categoryId);
+                if (category != null)
+                {
+                    return Ok(new CustomResponse<Category>
+                    {
+                        Message = Global.ResponseMessages.Success,
+                        StatusCode = StatusCodes.Status200OK,
+                        Result = await _categoryRepository.SaveOneProductByCategoryId(category.Id, product)
+                    });
+                }
+                else
+                {
+                    return NotFound(new CustomResponse<Error>
+                    {
+                        Message = Global.ResponseMessages.NotFound,
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Result = new Error { ErrorMessage = Global.ResponseMessages.GenerateInvalid("Category with " + categoryId + " is not found") }
+                    });
+                }
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(Error.LogError(ex));
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("{categoryId}/products/{productId}")]
+        public async Task<ActionResult<Category>> GetProductByCategoryId(int categoryId, int productId)
+        {
+            try
+            {
+                var category = await _categoryRepository.GetById(categoryId);
+                if (category != null)
+                {
+                    var product = await _productRepository.GetById(productId);
+                    if (product != null)
+                    {
+                        return Ok(new CustomResponse<Product>
+                        {
+                            Message = Global.ResponseMessages.Success,
+                            StatusCode = StatusCodes.Status200OK,
+                            Result = await _categoryRepository.GetOneProductByCategoryId(category.Id, product.Id)
+                        });
+                    }
+                    else
+                    {
+                        return NotFound(new CustomResponse<Error>
+                        {
+                            Message = Global.ResponseMessages.NotFound,
+                            StatusCode = StatusCodes.Status404NotFound,
+                            Result = new Error { ErrorMessage = Global.ResponseMessages.GenerateInvalid("Product with " + productId + " is not found") }
+                        });
+                    }
+                }
+                else
+                {
+                    return NotFound(new CustomResponse<Error>
+                    {
+                        Message = Global.ResponseMessages.NotFound,
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Result = new Error { ErrorMessage = Global.ResponseMessages.GenerateInvalid("Category with " + categoryId + " is not found") }
+                    });
+                }
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(Error.LogError(ex));
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{categoryId}/products/{productId}")]
+        public async Task<ActionResult<Category>> UpdateProductByCategoryId(int categoryId, int productId, [FromBody] Product product)
+        {
+            try
+            {
+                var category = await _categoryRepository.GetById(categoryId);
+                if (category != null)
+                {
+                    var productToEdit = await _productRepository.GetById(productId);
+                    if (productToEdit != null)
+                    {
+                        return Ok(new CustomResponse<Category>
+                        {
+                            Message = Global.ResponseMessages.Success,
+                            StatusCode = StatusCodes.Status200OK,
+                            Result = await _categoryRepository.EditOneProductByCategoryId(category.Id, productId, product)
+                        });
+                    }
+                    else
+                    {
+                        return NotFound(new CustomResponse<Error>
+                        {
+                            Message = Global.ResponseMessages.NotFound,
+                            StatusCode = StatusCodes.Status404NotFound,
+                            Result = new Error { ErrorMessage = Global.ResponseMessages.GenerateInvalid("Product with " + productId + " is not found") }
+                        });
+                    }
+                }
+                else
+                {
+                    return NotFound(new CustomResponse<Error>
+                    {
+                        Message = Global.ResponseMessages.NotFound,
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Result = new Error { ErrorMessage = Global.ResponseMessages.GenerateInvalid("Category with " + categoryId + " is not found") }
+                    });
+                }
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(Error.LogError(ex));
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{categoryId}/products/{productId}")]
+        public async Task<ActionResult<Category>> DeleteProductByCategoryId(int categoryId, int productId)
+        {
+            try
+            {
+                var category = await _categoryRepository.GetById(categoryId);
+                if (category != null)
+                {
+                    var product = await _productRepository.GetById(productId);
+                    if (product != null)
+                    {
+                        return Ok(new CustomResponse<Category>
+                        {
+                            Message = Global.ResponseMessages.Success,
+                            StatusCode = StatusCodes.Status200OK,
+                            Result = await _categoryRepository.DeleteOneProductByCategoryId(category.Id, product.Id)
+                        });
+                    }
+                    else
+                    {
+                        return NotFound(new CustomResponse<Error>
+                        {
+                            Message = Global.ResponseMessages.NotFound,
+                            StatusCode = StatusCodes.Status404NotFound,
+                            Result = new Error { ErrorMessage = Global.ResponseMessages.GenerateInvalid("Product with " + productId + " is not found") }
+                        });
+                    }
+                }
+                else
+                {
+                    return NotFound(new CustomResponse<Error>
+                    {
+                        Message = Global.ResponseMessages.NotFound,
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Result = new Error { ErrorMessage = Global.ResponseMessages.GenerateInvalid("Category with " + categoryId + " is not found") }
+                    });
+                }
             }
             catch (SqlException ex)
             {

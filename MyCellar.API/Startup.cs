@@ -50,7 +50,7 @@ namespace MyCellar.API
             });
 
             services.AddTransient<IRepository<Product>, ProductRepository>();
-            services.AddTransient<IRepository<Category>, CategoryRepository>();
+            services.AddTransient<ICategoryRepository, CategoryRepository>();
             services.AddTransient<IRecipeRepository, RecipeRepository>();
             services.AddTransient<IUserRepository, UserRepository>();
 
