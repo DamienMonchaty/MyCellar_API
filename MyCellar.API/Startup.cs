@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using MyCellar.API.ElasticHelpers;
 using MyCellar.Business.Repository;
 using MyCellar.Business.Repository.Impl;
 using MyCellar.Common.Models;
@@ -49,10 +50,13 @@ namespace MyCellar.API
                 };
             });
 
+            services.AddElasticsearch(Configuration);
+
             services.AddTransient<IRepository<Product>, ProductRepository>();
             services.AddTransient<ICategoryRepository, CategoryRepository>();
             services.AddTransient<IRecipeRepository, RecipeRepository>();
             services.AddTransient<IUserRepository, UserRepository>();
+
 
             // Autorise la communication entre application (Back/Front)
             services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
