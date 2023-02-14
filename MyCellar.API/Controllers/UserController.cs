@@ -109,13 +109,12 @@ namespace MyCellar.API.Controllers
         }
 
         [Authorize(Roles = "User")]
-        [HttpGet("{id}/products")]
-        public async Task<IActionResult> GetAllProductsFromCurrentUser(int id)
+        [HttpGet("current/products")]
+        public async Task<IActionResult> GetAllProductsFromCurrentUser()
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var userId = int.Parse(identity.FindFirst("id").Value);
-
-            if (userId == id)
+            var userId = identity.FindFirst("id").Value;
+            if (userId != null)
             {
                 try
                 {
@@ -132,7 +131,7 @@ namespace MyCellar.API.Controllers
                     {
                         Message = Global.ResponseMessages.Success,
                         StatusCode = StatusCodes.Status200OK,
-                        Result = await _userRepository.GetAllProductsFromCurrentUser(userId)
+                        Result = await _userRepository.GetAllProductsFromCurrentUser(int.Parse(userId))
                     });
                 }
                 catch (SqlException ex)
@@ -144,13 +143,12 @@ namespace MyCellar.API.Controllers
         }
 
         [Authorize(Roles = "User")]
-        [HttpPost("{id}/products")]
-        public async Task<IActionResult> AssignProductToCurrentUser(int id, [FromBody] int idProduct)
+        [HttpPost("current/products")]
+        public async Task<IActionResult> AssignProductToCurrentUser([FromBody] int productId)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var userId = int.Parse(identity.FindFirst("id").Value);
-
-            if (userId == id)
+            var userId = identity.FindFirst("id").Value;
+            if (userId != null)
             {
                 try
                 {
@@ -169,7 +167,7 @@ namespace MyCellar.API.Controllers
                     {
                         Message = Global.ResponseMessages.Success,
                         StatusCode = StatusCodes.Status200OK,
-                        Result = await _userRepository.AssignOneProductToCurrentUser(userId, idProduct)
+                        Result = await _userRepository.AssignOneProductToCurrentUser(int.Parse(userId), productId)
                     });
                 }
                 catch (SqlException ex)
@@ -181,13 +179,12 @@ namespace MyCellar.API.Controllers
         }
 
         [Authorize(Roles = "User")]
-        [HttpDelete("{id}/products/{productId}")]
-        public async Task<IActionResult> DeleteProductToCurrentUser(int id, int productId)
+        [HttpDelete("current/products/{productId}")]
+        public async Task<IActionResult> DeleteProductToCurrentUser(int productId)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
-            var userId = int.Parse(identity.FindFirst("id").Value);
-
-            if(userId == id) {
+            var userId = identity.FindFirst("id").Value;
+            if (userId != null) { 
 
                 try
                 {
@@ -206,7 +203,7 @@ namespace MyCellar.API.Controllers
                     {
                         Message = Global.ResponseMessages.Success,
                         StatusCode = StatusCodes.Status200OK,
-                        Result = await _userRepository.DeleteOneProductFromCurrentUser(userId, productId)
+                        Result = await _userRepository.DeleteOneProductFromCurrentUser(int.Parse(userId), productId)
                     });
                 }
                 catch (SqlException ex)
