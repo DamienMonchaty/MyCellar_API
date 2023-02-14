@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MyCellar.Business.Repository.Impl
 {
-    public class RecipeRepository : IRepository<Recipe>
+    public class RecipeRepository : IRecipeRepository
     {
         private readonly ModelDbContext _context;
 
@@ -69,5 +69,27 @@ namespace MyCellar.Business.Repository.Impl
             await _context.SaveChangesAsync();
             return emp.Entity;
         }
+
+        public async Task<List<Recipe>> GetAllRecipesByProducts(int[] ids)
+        {
+            List<int> myTags = new List<int>();
+            myTags.AddRange(ids);
+            int tagCount = myTags.Count;
+
+            IQueryable<int> subquery =
+              from tag in _context.RecipeProducts
+              where myTags.Contains(tag.ProductId)
+              group tag.ProductId by tag.RecipeId into g
+              where g.Count() == tagCount
+              select g.Key;
+
+            IQueryable<Recipe> query = _context.Recipes
+              .Where(c => subquery.Contains(c.Id));
+
+            var recipes = await query.ToListAsync();
+
+            return recipes;
+        }
     }
 }
+    

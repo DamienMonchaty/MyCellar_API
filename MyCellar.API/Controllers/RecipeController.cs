@@ -19,10 +19,10 @@ namespace MyCellar.API.Controllers
     [ApiController]
     public class RecipeController : ControllerBase
     {
-        private readonly IRepository<Recipe> _recipeRepository;
+        private readonly IRecipeRepository _recipeRepository;
         private readonly IMapper _mapper;
 
-        public RecipeController(IRepository<Recipe> recipeRepository, IMapper mapper)
+        public RecipeController(IRecipeRepository recipeRepository, IMapper mapper)
         {
             _recipeRepository = recipeRepository;
             _mapper = mapper;
@@ -265,6 +265,25 @@ namespace MyCellar.API.Controllers
                     Message = Global.ResponseMessages.Success,
                     StatusCode = StatusCodes.Status200OK,
                     Result = await _recipeRepository.GetAllPaginate(page, pagesize, search)
+                });
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(Error.LogError(ex));
+            }
+        }
+
+        [Authorize(Roles = "User, Admin")]
+        [HttpGet("byProducts")]
+        public async Task<IActionResult> GetRecipesByProducts([FromQuery] int[] ids)
+        {
+            try
+            {
+                return Ok(new CustomResponse<List<Recipe>>
+                {
+                    Message = Global.ResponseMessages.Success,
+                    StatusCode = StatusCodes.Status200OK,
+                    Result = await _recipeRepository.GetAllRecipesByProducts(ids)
                 });
             }
             catch (SqlException ex)

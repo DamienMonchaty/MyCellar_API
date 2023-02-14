@@ -51,7 +51,7 @@ namespace MyCellar.API
 
             services.AddTransient<IRepository<Product>, ProductRepository>();
             services.AddTransient<IRepository<Category>, CategoryRepository>();
-            services.AddTransient<IRepository<Recipe>, RecipeRepository>();
+            services.AddTransient<IRecipeRepository, RecipeRepository>();
             services.AddTransient<IUserRepository, UserRepository>();
 
             // Autorise la communication entre application (Back/Front)
