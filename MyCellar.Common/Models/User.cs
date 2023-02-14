@@ -14,7 +14,9 @@ namespace MyCellar.Common.Models
         public string Password { get; set; }
         public string Sexe { get; set; }
         public string Role { get; set; }
+        [NotMapped]
         public string Token { get; set; }
+        [JsonIgnore]
         public virtual ICollection<UserProduct> UserProducts { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }

@@ -116,16 +116,14 @@ namespace MyCellar.Business.Repository.Impl
         public Task<User> DeleteOneProductFromCurrentUser(int userId, int productId)
         {
             var user = _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
-
             var products = _context.Users
                 .Where(p => p == user.Result)
                 .SelectMany(p => p.UserProducts)
                 .Select(p => p.Product).ToList();
 
-            var productToDelete = products.SingleOrDefault(p => p.Id == productId);
-            _context.Products.Remove(productToDelete);
+            var userProductToDelete = _context.UserProducts.SingleOrDefault(p => p.ProductId == productId && p.UserId == userId);
+            _context.UserProducts.Remove(userProductToDelete);
             _context.SaveChanges();
-
             return user;
         }
 

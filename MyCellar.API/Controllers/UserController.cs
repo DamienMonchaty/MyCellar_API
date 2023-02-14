@@ -156,8 +156,6 @@ namespace MyCellar.API.Controllers
                             Result = ModelState
                         });
                     }
-
-
                     return Ok(new CustomResponse<User>
                     {
                         Message = Global.ResponseMessages.Success,

@@ -9,5 +9,8 @@ namespace MyCellar.Business.Repository
     public interface IRecipeRepository : IRepository<Recipe>
     {
         Task<List<Recipe>> GetAllRecipesByProducts(int[] ids);
+        Task<Recipe> AssignOneProductToOneRecipe(int recipeId, int productId);
+        Task<Recipe> DeleteOneProductToOneRecipe(int recipeId, int productId);
+        Task<List<Product>> GetAllProductsFromOneRecipe(int recipeId);
     }
 }

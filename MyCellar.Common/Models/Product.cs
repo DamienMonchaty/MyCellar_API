@@ -12,7 +12,9 @@ namespace MyCellar.Common.Models
         public string Description { get; set; }
         public int Quantity { get; set; }
         public string ImgUrl { get; set; }
+        [JsonIgnore]
         public virtual ICollection<RecipeProduct> RecipeProducts { get; set; }
+        [JsonIgnore]
         public virtual ICollection<UserProduct> UserProducts { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }

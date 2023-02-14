@@ -90,6 +90,49 @@ namespace MyCellar.Business.Repository.Impl
 
             return recipes;
         }
+
+        public async Task<Recipe> AssignOneProductToOneRecipe(int recipeId, int productId)
+        {
+            var recipe = await _context.Recipes.FirstOrDefaultAsync(x => x.Id == recipeId);
+            var product = await _context.Products.FirstOrDefaultAsync(x => x.Id == productId);
+            RecipeProduct recipeProduct;
+            if (recipe != null && product != null)
+            {
+                recipeProduct = new RecipeProduct
+                {
+                    RecipeId = recipeId,
+                    ProductId = productId
+                };
+                _context.RecipeProducts.Add(recipeProduct);
+                await _context.SaveChangesAsync();
+            }
+
+            return recipe;
+        }
+
+        public async Task<Recipe> DeleteOneProductToOneRecipe(int recipeId, int productId)
+        {
+            var recipe = await _context.Recipes.FirstOrDefaultAsync(x => x.Id == recipeId);
+            var products = _context.Recipes
+               .Where(p => p == recipe)
+               .SelectMany(p => p.RecipeProducts)
+               .Select(p => p.Product).ToList();
+            var recipeProductToDelete = _context.RecipeProducts.SingleOrDefault(p => p.ProductId == productId && p.RecipeId == recipeId);
+            _context.RecipeProducts.Remove(recipeProductToDelete);
+            _context.SaveChanges();
+            return recipe;
+        }
+
+        public async Task<List<Product>> GetAllProductsFromOneRecipe(int recipeId)
+        {
+            var recipe = await _context.Recipes.FirstOrDefaultAsync(x => x.Id == recipeId);
+            var products = _context.Recipes
+                .Where(p => p == recipe)
+                .SelectMany(p => p.RecipeProducts)
+                .Select(p => p.Product).ToList();
+
+            return products;
+        }
     }
 }
     

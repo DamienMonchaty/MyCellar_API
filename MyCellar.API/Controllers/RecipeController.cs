@@ -20,11 +20,13 @@ namespace MyCellar.API.Controllers
     public class RecipeController : ControllerBase
     {
         private readonly IRecipeRepository _recipeRepository;
+        private readonly IRepository<Product> _productRepository;
         private readonly IMapper _mapper;
 
-        public RecipeController(IRecipeRepository recipeRepository, IMapper mapper)
+        public RecipeController(IRecipeRepository recipeRepository, IRepository<Product> productRepository, IMapper mapper)
         {
             _recipeRepository = recipeRepository;
+            _productRepository = productRepository;
             _mapper = mapper;
         }
 
@@ -285,6 +287,124 @@ namespace MyCellar.API.Controllers
                     StatusCode = StatusCodes.Status200OK,
                     Result = await _recipeRepository.GetAllRecipesByProducts(ids)
                 });
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(Error.LogError(ex));
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("{id}/products")]
+        public async Task<IActionResult> GetAllProductsFromOneRecipe(int id)
+        {
+            try
+            {
+                var a = await _recipeRepository.GetAllProductsFromOneRecipe(id);
+                if (a != null)
+                {
+                    return Ok(new CustomResponse<List<Product>>
+                    {
+                        Message = Global.ResponseMessages.Success,
+                        StatusCode = StatusCodes.Status200OK,
+                        Result = a
+                    });
+                }
+                else
+                {
+                    return NotFound(new CustomResponse<Error>
+                    {
+                        Message = Global.ResponseMessages.NotFound,
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Result = new Error { ErrorMessage = Global.ResponseMessages.GenerateInvalid("Recipe with " + id + " is not found") }
+                    });
+                }
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(Error.LogError(ex));
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("{recipeId}/products")]
+        public async Task<IActionResult> AssignProductToOneRecipe(int recipeId, [FromBody] int productId)
+        {
+            try
+            {
+                var a = await _recipeRepository.GetById(recipeId);
+                if (a != null)
+                {
+                    if (!ModelState.IsValid)
+                    {
+                        return BadRequest(new CustomResponse<object>
+                        {
+                            Message = Global.ResponseMessages.BadRequest,
+                            StatusCode = StatusCodes.Status400BadRequest,
+                            Result = ModelState
+                        });
+                    }
+                    return Ok(new CustomResponse<Recipe>
+                    {
+                        Message = Global.ResponseMessages.Success,
+                        StatusCode = StatusCodes.Status200OK,
+                        Result = await _recipeRepository.AssignOneProductToOneRecipe(recipeId, productId)
+                    });
+                }
+                else
+                {
+                    return NotFound(new CustomResponse<Error>
+                    {
+                        Message = Global.ResponseMessages.NotFound,
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Result = new Error { ErrorMessage = Global.ResponseMessages.GenerateInvalid("Recipe with " + recipeId + " is not found") }
+                    });
+                }
+            }
+            catch (SqlException ex)
+            {
+                return StatusCode(Error.LogError(ex));
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{recipeId}/products/{productId}")]
+        public async Task<IActionResult> DeleteProductToOneRecipe(int recipeId, int productId)
+        {
+            try
+            {
+                var a = await _recipeRepository.GetById(recipeId);
+                if (a != null)
+                {
+                    var b = await _productRepository.GetById(productId);
+                    if (b != null)
+                    {
+                        return Ok(new CustomResponse<Recipe>
+                        {
+                            Message = Global.ResponseMessages.Success,
+                            StatusCode = StatusCodes.Status200OK,
+                            Result = await _recipeRepository.DeleteOneProductToOneRecipe(recipeId, productId)
+                        });
+                    }
+                    else
+                    {
+                        return NotFound(new CustomResponse<Error>
+                        {
+                            Message = Global.ResponseMessages.NotFound,
+                            StatusCode = StatusCodes.Status404NotFound,
+                            Result = new Error { ErrorMessage = Global.ResponseMessages.GenerateInvalid("Product with " + productId + " is not found") }
+                        });
+                    }
+                }
+                else
+                {
+                    return NotFound(new CustomResponse<Error>
+                    {
+                        Message = Global.ResponseMessages.NotFound,
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Result = new Error { ErrorMessage = Global.ResponseMessages.GenerateInvalid("Recipe with " + recipeId + " is not found") }
+                    });
+                }
             }
             catch (SqlException ex)
             {

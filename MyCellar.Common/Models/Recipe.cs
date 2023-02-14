@@ -1,7 +1,9 @@
 ﻿using MyCellar.Common.Models.Enums;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace MyCellar.Common.Models
 {
@@ -14,6 +16,7 @@ namespace MyCellar.Common.Models
         public string ImgUrl { get; set; }
         public Difficulty Difficulty { get; set; }
         public Caloric Caloric { get; set; }
+        [JsonIgnore]
         public virtual ICollection<RecipeProduct> RecipeProducts { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
